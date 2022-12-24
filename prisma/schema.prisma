@@ -1,0 +1,116 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           Int           @id @unique @default(autoincrement())
+  userRefId    String        @unique @default(cuid())
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime?     @updatedAt
+  email        String        @unique
+  hash         String        @unique
+  firstName    String?       @unique
+  lastName     String?       @unique
+  isDeleted    Boolean?      @default(false)
+  GroupBudgets GroupBudget[]
+}
+
+model GroupBudget {
+  id          Int       @id @unique @default(autoincrement())
+  groupRefId  String    @unique @default(cuid())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  title       String?   @db.VarChar(255)
+  description String?
+  type        String?
+  isDeleted   Boolean?
+  user        User      @relation(fields: [userRefId], references: [userRefId])
+  userRefId   String    @unique
+  subUsers    SubUser[]
+  report      Report?
+}
+
+model SubUser {
+  id           Int         @id @unique @default(autoincrement())
+  subUserRefId String      @unique @default(cuid())
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime?   @updatedAt
+  firstName    String?
+  lastName     String?
+  description  String?
+  isDeleted    Boolean?    @default(false)
+  group        GroupBudget @relation(fields: [groupRefId], references: [groupRefId])
+  groupRefId   String      @unique
+  role         String      @db.VarChar(255)
+  incomes      Income[]
+  expenses     Expense[]
+}
+
+model Income {
+  id           Int       @id @unique @default(autoincrement())
+  incomeRefId  String    @unique @default(cuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  title        String?   @db.VarChar(255)
+  description  String?
+  type         String?
+  isDeleted    Boolean?  @default(false)
+  amount       Float
+  frequency    Frequency
+  subUser      SubUser   @relation(fields: [subUserRefId], references: [subUserRefId])
+  subUserRefId String
+  report       Report    @relation(fields: [reportId], references: [reportRefId])
+  reportId     String
+}
+
+model Expense {
+  id           Int       @id @unique @default(autoincrement())
+  expenseRefId String    @unique @default(cuid())
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime? @updatedAt
+  title        String?   @db.VarChar(255)
+  description  String?
+  type         String?
+  isDeleted    Boolean?  @default(false)
+  amount       Float
+  frequency    Frequency
+  subUser      SubUser   @relation(fields: [subUserRefId], references: [subUserRefId])
+  subUserRefId String
+  report       Report    @relation(fields: [reportId], references: [reportRefId])
+  reportId     String
+}
+
+model Report {
+  id          Int         @id @unique @default(autoincrement())
+  reportRefId String      @unique @default(cuid())
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime?   @updatedAt
+  isDeleted   Boolean?    @default(false)
+  title       String
+  incomes     Income[]
+  expenses    Expense[]
+  group       GroupBudget @relation(fields: [groupRefId], references: [groupRefId])
+  groupRefId  String      @unique
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Frequency {
+  WEEKLY
+  BIWEEKLY
+  MONTHLY
+  QUARTERLY
+  SEMIANNUALLY
+  ANNUALLY
+}
