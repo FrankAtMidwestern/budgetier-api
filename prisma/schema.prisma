@@ -12,51 +12,54 @@ datasource db {
 
 model User {
   id           Int           @id @unique @default(autoincrement())
-  userRefId    String        @unique @default(cuid())
+  refId    String        @unique @default(cuid())
   createdAt    DateTime      @default(now())
   updatedAt    DateTime?     @updatedAt
   email        String        @unique
-  hash         String        @unique
+  hash         String?       
   firstName    String?       @unique
   lastName     String?       @unique
   isDeleted    Boolean?      @default(false)
   GroupBudgets GroupBudget[]
+  @@map("users")
 }
 
 model GroupBudget {
   id          Int       @id @unique @default(autoincrement())
-  groupRefId  String    @unique @default(cuid())
+  refId  String    @unique @default(cuid())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
   title       String?   @db.VarChar(255)
   description String?
   type        String?
   isDeleted   Boolean?
-  user        User      @relation(fields: [userRefId], references: [userRefId])
+  user        User      @relation(fields: [userRefId], references: [refId])
   userRefId   String    @unique
   subUsers    SubUser[]
   report      Report?
+  @@map("groupBudgets")
 }
 
 model SubUser {
   id           Int         @id @unique @default(autoincrement())
-  subUserRefId String      @unique @default(cuid())
+  refId String      @unique @default(cuid())
   createdAt    DateTime    @default(now())
   updatedAt    DateTime?   @updatedAt
   firstName    String?
   lastName     String?
   description  String?
   isDeleted    Boolean?    @default(false)
-  group        GroupBudget @relation(fields: [groupRefId], references: [groupRefId])
+  group        GroupBudget @relation(fields: [groupRefId], references: [refId])
   groupRefId   String      @unique
   role         String      @db.VarChar(255)
   incomes      Income[]
   expenses     Expense[]
+  @@map("subUsers")
 }
 
 model Income {
   id           Int       @id @unique @default(autoincrement())
-  incomeRefId  String    @unique @default(cuid())
+  refId  String    @unique @default(cuid())
   createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
   title        String?   @db.VarChar(255)
@@ -65,15 +68,16 @@ model Income {
   isDeleted    Boolean?  @default(false)
   amount       Float
   frequency    Frequency
-  subUser      SubUser   @relation(fields: [subUserRefId], references: [subUserRefId])
+  subUser      SubUser   @relation(fields: [subUserRefId], references: [refId])
   subUserRefId String
-  report       Report    @relation(fields: [reportId], references: [reportRefId])
+  report       Report    @relation(fields: [reportId], references: [refId])
   reportId     String
+  @@map("incomes")
 }
 
 model Expense {
   id           Int       @id @unique @default(autoincrement())
-  expenseRefId String    @unique @default(cuid())
+  refId String    @unique @default(cuid())
   createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
   title        String?   @db.VarChar(255)
@@ -82,23 +86,25 @@ model Expense {
   isDeleted    Boolean?  @default(false)
   amount       Float
   frequency    Frequency
-  subUser      SubUser   @relation(fields: [subUserRefId], references: [subUserRefId])
+  subUser      SubUser   @relation(fields: [subUserRefId], references: [refId])
   subUserRefId String
-  report       Report    @relation(fields: [reportId], references: [reportRefId])
+  report       Report    @relation(fields: [reportId], references: [refId])
   reportId     String
+  @@map("expenses")
 }
 
 model Report {
   id          Int         @id @unique @default(autoincrement())
-  reportRefId String      @unique @default(cuid())
+  refId String      @unique @default(cuid())
   createdAt   DateTime    @default(now())
   updatedAt   DateTime?   @updatedAt
   isDeleted   Boolean?    @default(false)
   title       String
   incomes     Income[]
   expenses    Expense[]
-  group       GroupBudget @relation(fields: [groupRefId], references: [groupRefId])
+  group       GroupBudget @relation(fields: [groupRefId], references: [refId])
   groupRefId  String      @unique
+  @@map("reports")
 }
 
 enum Role {
