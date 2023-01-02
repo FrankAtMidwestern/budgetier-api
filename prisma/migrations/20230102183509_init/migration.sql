@@ -1,52 +1,8 @@
-/*
-  Warnings:
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
-  - You are about to drop the `Expense` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `GroupBudget` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Income` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `Report` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `SubUser` table. If the table is not empty, all the data it contains will be lost.
-  - You are about to drop the `User` table. If the table is not empty, all the data it contains will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE "Expense" DROP CONSTRAINT "Expense_reportId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Expense" DROP CONSTRAINT "Expense_subUserRefId_fkey";
-
--- DropForeignKey
-ALTER TABLE "GroupBudget" DROP CONSTRAINT "GroupBudget_userRefId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Income" DROP CONSTRAINT "Income_reportId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Income" DROP CONSTRAINT "Income_subUserRefId_fkey";
-
--- DropForeignKey
-ALTER TABLE "Report" DROP CONSTRAINT "Report_groupRefId_fkey";
-
--- DropForeignKey
-ALTER TABLE "SubUser" DROP CONSTRAINT "SubUser_groupRefId_fkey";
-
--- DropTable
-DROP TABLE "Expense";
-
--- DropTable
-DROP TABLE "GroupBudget";
-
--- DropTable
-DROP TABLE "Income";
-
--- DropTable
-DROP TABLE "Report";
-
--- DropTable
-DROP TABLE "SubUser";
-
--- DropTable
-DROP TABLE "User";
+-- CreateEnum
+CREATE TYPE "Frequency" AS ENUM ('WEEKLY', 'BIWEEKLY', 'MONTHLY', 'QUARTERLY', 'SEMIANNUALLY', 'ANNUALLY');
 
 -- CreateTable
 CREATE TABLE "users" (
