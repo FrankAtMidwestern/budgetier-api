@@ -11,100 +11,121 @@ datasource db {
 }
 
 model User {
-  id           Int           @id @unique @default(autoincrement())
-  refId    String        @unique @default(cuid())
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime?     @updatedAt
-  email        String        @unique
-  hash         String       
-  firstName    String?       @unique
-  lastName     String?       @unique
-  isDeleted    Boolean?      @default(false)
-  GroupBudgets GroupBudget[]
+  id        Int        @id @unique @default(autoincrement())
+  createdAt DateTime   @default(now())
+  updatedAt DateTime?  @updatedAt
+  email     String     @unique
+  hash      String
+  firstName String?    @unique
+  lastName  String?    @unique
+  isDeleted Boolean?   @default(false)
+  Project   Project?   @relation(fields: [projectId], references: [id])
+  projectId Int?
+  role       Role     @default(USER)
+  budgets    Budget[]
+  permissions Permission[]
+  group      GroupBudget?   @relation(fields: [groupId], references: [id])
+  groupId    Int?
+  report     Report?   @relation(fields: [reportId], references: [id])
+  reportId   Int?
+
   @@map("users")
 }
 
+model Permission {
+ id        Int        @id @unique @default(autoincrement())
+  user        User      @relation(fields: [userId], references: [id])
+  userId      Int
+  resource    Resource
+  action      Action
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+}
+
+model Report {
+  id        Int        @id @unique @default(autoincrement())
+  group       GroupBudget   @relation(fields: [groupId], references: [id])
+  groupId     Int @unique
+  totalIncome Int
+  totalExpense Int
+  net         Int
+  users       User[]
+}
+
 model GroupBudget {
+  id        Int        @id @unique @default(autoincrement())
+  users       User[]
+  budgets     Budget[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now())
+  report      Report?
+  reportId    Int? @unique
+}
+
+enum Resource {
+  BUDGET
+  INCOME
+  EXPENSE
+  GROUP_BUDGET
+  REPORT
+  COMMENT
+}
+
+enum Action {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+}
+
+model Project {
+  id        Int        @id @unique @default(autoincrement())
+  title String
+  users User[]
+}
+
+model Budget {
+  id        Int       @id @unique @default(autoincrement())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+  income    Income[]
+  expense   Expense[]
+  author      User     @relation(fields: [authorId], references: [id])
+  authorId    Int
+  group       GroupBudget   @relation(fields: [groupId], references: [id])
+  groupId     Int
+}
+
+model Income {
   id          Int       @id @unique @default(autoincrement())
-  refId  String    @unique @default(cuid())
   createdAt   DateTime  @default(now())
   updatedAt   DateTime? @updatedAt
   title       String?   @db.VarChar(255)
   description String?
   type        String?
-  isDeleted   Boolean?
-  user        User      @relation(fields: [userRefId], references: [refId])
-  userRefId   String    @unique
-  subUsers    SubUser[]
-  report      Report?
-  @@map("groupBudgets")
-}
+  isDeleted   Boolean?  @default(false)
+  amount      Float
+  frequency   Frequency
+  budgetId    Int?
+  Budget      Budget?   @relation(fields: [budgetId], references: [id])
 
-model SubUser {
-  id           Int         @id @unique @default(autoincrement())
-  refId String      @unique @default(cuid())
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime?   @updatedAt
-  firstName    String?
-  lastName     String?
-  description  String?
-  isDeleted    Boolean?    @default(false)
-  group        GroupBudget @relation(fields: [groupRefId], references: [refId])
-  groupRefId   String      @unique
-  role         String      @db.VarChar(255)
-  incomes      Income[]
-  expenses     Expense[]
-  @@map("subUsers")
-}
-
-model Income {
-  id           Int       @id @unique @default(autoincrement())
-  refId  String    @unique @default(cuid())
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime? @updatedAt
-  title        String?   @db.VarChar(255)
-  description  String?
-  type         String?
-  isDeleted    Boolean?  @default(false)
-  amount       Float
-  frequency    Frequency
-  subUser      SubUser   @relation(fields: [subUserRefId], references: [refId])
-  subUserRefId String
-  report       Report    @relation(fields: [reportId], references: [refId])
-  reportId     String
   @@map("incomes")
 }
 
 model Expense {
-  id           Int       @id @unique @default(autoincrement())
-  refId String    @unique @default(cuid())
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime? @updatedAt
-  title        String?   @db.VarChar(255)
-  description  String?
-  type         String?
-  isDeleted    Boolean?  @default(false)
-  amount       Float
-  frequency    Frequency
-  subUser      SubUser   @relation(fields: [subUserRefId], references: [refId])
-  subUserRefId String
-  report       Report    @relation(fields: [reportId], references: [refId])
-  reportId     String
-  @@map("expenses")
-}
+  id          Int       @id @unique @default(autoincrement())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime? @updatedAt
+  title       String?   @db.VarChar(255)
+  description String?
+  type        String?
+  isDeleted   Boolean?  @default(false)
+  amount      Float
+  frequency   Frequency
+  budgetId    Int?
+  Budget      Budget?   @relation(fields: [budgetId], references: [id])
 
-model Report {
-  id          Int         @id @unique @default(autoincrement())
-  refId String      @unique @default(cuid())
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime?   @updatedAt
-  isDeleted   Boolean?    @default(false)
-  title       String
-  incomes     Income[]
-  expenses    Expense[]
-  group       GroupBudget @relation(fields: [groupRefId], references: [refId])
-  groupRefId  String      @unique
-  @@map("reports")
+  @@map("expenses")
 }
 
 enum Role {
