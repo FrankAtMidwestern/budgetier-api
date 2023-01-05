@@ -20,7 +20,6 @@ CREATE TABLE "users" (
     "firstName" TEXT,
     "lastName" TEXT,
     "isDeleted" BOOLEAN DEFAULT false,
-    "projectId" INTEGER,
     "role" "Role" NOT NULL DEFAULT 'USER',
     "groupId" INTEGER,
     "reportId" INTEGER,
@@ -59,14 +58,6 @@ CREATE TABLE "GroupBudget" (
     "reportId" INTEGER,
 
     CONSTRAINT "GroupBudget_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Project" (
-    "id" SERIAL NOT NULL,
-    "title" TEXT NOT NULL,
-
-    CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -112,6 +103,47 @@ CREATE TABLE "expenses" (
     CONSTRAINT "expenses_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "Tag" (
+    "id" SERIAL NOT NULL,
+    "name" TEXT NOT NULL,
+
+    CONSTRAINT "Tag_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "TagsOnBudgets" (
+    "tagId" INTEGER NOT NULL,
+    "budgetId" INTEGER NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TagsOnBudgets_pkey" PRIMARY KEY ("tagId","budgetId")
+);
+
+-- CreateTable
+CREATE TABLE "TagsOnIncomes" (
+    "tagId" INTEGER NOT NULL,
+    "incomeId" INTEGER NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TagsOnIncomes_pkey" PRIMARY KEY ("tagId","incomeId")
+);
+
+-- CreateTable
+CREATE TABLE "TagsOnExpenses" (
+    "tagId" INTEGER NOT NULL,
+    "expenseId" INTEGER NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "TagsOnExpenses_pkey" PRIMARY KEY ("tagId","expenseId")
+);
+
+-- CreateTable
+CREATE TABLE "_UserManages" (
+    "A" INTEGER NOT NULL,
+    "B" INTEGER NOT NULL
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_id_key" ON "users"("id");
 
@@ -140,9 +172,6 @@ CREATE UNIQUE INDEX "GroupBudget_id_key" ON "GroupBudget"("id");
 CREATE UNIQUE INDEX "GroupBudget_reportId_key" ON "GroupBudget"("reportId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Project_id_key" ON "Project"("id");
-
--- CreateIndex
 CREATE UNIQUE INDEX "Budget_id_key" ON "Budget"("id");
 
 -- CreateIndex
@@ -151,8 +180,14 @@ CREATE UNIQUE INDEX "incomes_id_key" ON "incomes"("id");
 -- CreateIndex
 CREATE UNIQUE INDEX "expenses_id_key" ON "expenses"("id");
 
--- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+-- CreateIndex
+CREATE UNIQUE INDEX "Tag_name_key" ON "Tag"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "_UserManages_AB_unique" ON "_UserManages"("A", "B");
+
+-- CreateIndex
+CREATE INDEX "_UserManages_B_index" ON "_UserManages"("B");
 
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "GroupBudget"("id") ON DELETE SET NULL ON UPDATE CASCADE;
@@ -177,3 +212,27 @@ ALTER TABLE "incomes" ADD CONSTRAINT "incomes_budgetId_fkey" FOREIGN KEY ("budge
 
 -- AddForeignKey
 ALTER TABLE "expenses" ADD CONSTRAINT "expenses_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnBudgets" ADD CONSTRAINT "TagsOnBudgets_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnBudgets" ADD CONSTRAINT "TagsOnBudgets_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnIncomes" ADD CONSTRAINT "TagsOnIncomes_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnIncomes" ADD CONSTRAINT "TagsOnIncomes_incomeId_fkey" FOREIGN KEY ("incomeId") REFERENCES "incomes"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnExpenses" ADD CONSTRAINT "TagsOnExpenses_tagId_fkey" FOREIGN KEY ("tagId") REFERENCES "Tag"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TagsOnExpenses" ADD CONSTRAINT "TagsOnExpenses_expenseId_fkey" FOREIGN KEY ("expenseId") REFERENCES "expenses"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserManages" ADD CONSTRAINT "_UserManages_A_fkey" FOREIGN KEY ("A") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "_UserManages" ADD CONSTRAINT "_UserManages_B_fkey" FOREIGN KEY ("B") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;

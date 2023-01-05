@@ -19,8 +19,6 @@ model User {
   firstName String?    @unique
   lastName  String?    @unique
   isDeleted Boolean?   @default(false)
-  Project   Project?   @relation(fields: [projectId], references: [id])
-  projectId Int?
   role       Role     @default(USER)
   budgets    Budget[]
   permissions Permission[]
@@ -28,7 +26,8 @@ model User {
   groupId    Int?
   report     Report?   @relation(fields: [reportId], references: [id])
   reportId   Int?
-
+  managedBy User[]  @relation("UserManages") 
+  managing  User[]  @relation("UserManages") 
   @@map("users")
 }
 
@@ -78,11 +77,6 @@ enum Action {
   DELETE
 }
 
-model Project {
-  id        Int        @id @unique @default(autoincrement())
-  title String
-  users User[]
-}
 
 model Budget {
   id        Int       @id @unique @default(autoincrement())
@@ -94,6 +88,7 @@ model Budget {
   authorId    Int
   group       GroupBudget   @relation(fields: [groupId], references: [id])
   groupId     Int
+  tags  TagsOnBudgets[]
 }
 
 model Income {
@@ -108,6 +103,7 @@ model Income {
   frequency   Frequency
   budgetId    Int?
   Budget      Budget?   @relation(fields: [budgetId], references: [id])
+  tags  TagsOnIncomes[]
 
   @@map("incomes")
 }
@@ -124,8 +120,42 @@ model Expense {
   frequency   Frequency
   budgetId    Int?
   Budget      Budget?   @relation(fields: [budgetId], references: [id])
+  tags  TagsOnExpenses[]
 
   @@map("expenses")
+}
+
+model Tag { 
+  id    Int    @id @default(autoincrement()) 
+  name  String @unique 
+  budgets TagsOnBudgets[] 
+  incomes TagsOnIncomes[]
+  expenses TagsOnExpenses[]
+} 
+
+model TagsOnBudgets { 
+  tag Tag @relation(fields: [tagId], references: [id]) 
+  tagId Int 
+  budget Budget @relation(fields: [budgetId], references: [id]) 
+  budgetId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([tagId, budgetId]) 
+}
+model TagsOnIncomes { 
+  tag Tag @relation(fields: [tagId], references: [id]) 
+  tagId Int 
+  income Income @relation(fields: [incomeId], references: [id]) 
+  incomeId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([tagId, incomeId]) 
+}
+model TagsOnExpenses { 
+  tag Tag @relation(fields: [tagId], references: [id]) 
+  tagId Int 
+  expense Expense @relation(fields: [expenseId], references: [id]) 
+  expenseId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([tagId, expenseId]) 
 }
 
 enum Role {
