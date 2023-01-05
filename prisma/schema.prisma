@@ -16,8 +16,8 @@ model User {
   updatedAt DateTime?  @updatedAt
   email     String     @unique
   hash      String
-  firstName String?    @unique
-  lastName  String?    @unique
+  firstName String?    
+  lastName  String?    
   isDeleted Boolean?   @default(false)
   role       Role     @default(USER)
   budgets    Budget[]

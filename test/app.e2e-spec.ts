@@ -4,6 +4,7 @@ import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as pactum from 'pactum';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { SignupAuthDto, SigninAuthDto } from '../src/auth/dto';
+import { EditUserDto } from '../src/user/dto';
 describe('App e2e', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -113,12 +114,32 @@ describe('App e2e', () => {
           .withHeaders({
             Authorization: 'Bearer $S{userAt}',
           })
-          .expectStatus(200)
-          .inspect();
+          .expectStatus(200);
       });
     });
 
-    describe('Edit user', () => {});
+    describe('Edit user', () => {
+      it('should edit current user', async () => {
+        const dto: EditUserDto = {
+          firstName: 'Johnathan',
+          lastName: 'Doseph',
+          email: 'johathan@gmail.com',
+          role: 'ADMIN',
+        };
+        return pactum
+          .spec()
+          .patch('/users')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains(dto.firstName)
+          .expectBodyContains(dto.lastName)
+          .expectBodyContains(dto.email)
+          .expectBodyContains(dto.role);
+      });
+    });
   });
   describe('GroupBudget', () => {
     describe('Create GroupBudget', () => {});
