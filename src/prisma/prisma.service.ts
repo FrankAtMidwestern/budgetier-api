@@ -13,4 +13,19 @@ export class PrismaService extends PrismaClient {
       },
     });
   }
+  cleanDb() {
+    return this.$transaction([
+      this.tagsOnExpenses.deleteMany(),
+      this.tagsOnIncomes.deleteMany(),
+      this.income.deleteMany(),
+      this.expense.deleteMany(),
+      this.tagsOnBudgets.deleteMany(),
+      this.tag.deleteMany(),
+      this.budget.deleteMany(),
+      this.report.deleteMany(),
+      this.groupBudget.deleteMany(),
+      this.permission.deleteMany(),
+      this.user.deleteMany(),
+    ]);
+  }
 }
