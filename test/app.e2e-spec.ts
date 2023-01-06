@@ -5,6 +5,7 @@ import * as pactum from 'pactum';
 import { PrismaService } from '../src/prisma/prisma.service';
 import { SignupAuthDto, SigninAuthDto } from '../src/auth/dto';
 import { EditUserDto } from '../src/user/dto';
+import { CreateGroupBudgetDto } from '../src/groupbudget/dto/create-groupbudget.dto';
 describe('App e2e', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -142,7 +143,34 @@ describe('App e2e', () => {
     });
   });
   describe('GroupBudget', () => {
-    describe('Create GroupBudget', () => {});
+    describe('Get empty GroupBudget', () => {
+      it('should get empty GroupBudget', async () => {
+        return pactum
+          .spec()
+          .get('/groupbudgets')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBody([]);
+      });
+    });
+    describe('Create GroupBudget', () => {
+      const dto: CreateGroupBudgetDto = {
+        title: 'First Group budget',
+        description: 'A description of the first group budget',
+      };
+      it('should create GroupBudget', async () => {
+        return pactum
+          .spec()
+          .post('/groupbudgets')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(201);
+      });
+    });
     describe('Get GroupBudgets', () => {});
     describe('Get GroupBudget by id', () => {});
     describe('Edit GroupBudget by id', () => {});

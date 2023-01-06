@@ -22,8 +22,7 @@ model User {
   role       Role     @default(USER)
   budgets    Budget[]
   permissions Permission[]
-  group      GroupBudget?   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId    Int?
+  groupBudgets      UsersOnGroupBudgets[]
   report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
   reportId   Int?
   managedBy User[]  @relation("UserManages") 
@@ -44,6 +43,8 @@ model Permission {
 
 model Report {
   id        Int        @id @unique @default(autoincrement())
+  title String
+  description String?
   group       GroupBudget   @relation(fields: [groupId], references: [id], onDelete: Cascade)
   groupId     Int @unique
   totalIncome Int
@@ -52,9 +53,20 @@ model Report {
   users       User[]
 }
 
+model UsersOnGroupBudgets{
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  userId Int 
+  groupBudget GroupBudget @relation(fields: [groupBudgetId], references: [id], onDelete: Cascade) 
+  groupBudgetId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([userId, groupBudgetId]) 
+}
+
 model GroupBudget {
   id        Int        @id @unique @default(autoincrement())
-  users       User[]
+  title String
+  description String?
+  users       UsersOnGroupBudgets[]
   budgets     Budget[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
@@ -81,6 +93,8 @@ enum Action {
 
 model Budget {
   id        Int       @id @unique @default(autoincrement())
+  title String
+  description String?
   createdAt DateTime  @default(now())
   updatedAt DateTime? @updatedAt
   income    Income[]
