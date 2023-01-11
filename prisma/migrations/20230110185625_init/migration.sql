@@ -21,7 +21,6 @@ CREATE TABLE "users" (
     "lastName" TEXT,
     "isDeleted" BOOLEAN DEFAULT false,
     "role" "Role" NOT NULL DEFAULT 'USER',
-    "reportId" INTEGER,
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -42,6 +41,7 @@ CREATE TABLE "Permission" (
 -- CreateTable
 CREATE TABLE "Report" (
     "id" SERIAL NOT NULL,
+    "ownerId" INTEGER NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "groupId" INTEGER NOT NULL,
@@ -50,6 +50,15 @@ CREATE TABLE "Report" (
     "net" INTEGER NOT NULL,
 
     CONSTRAINT "Report_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "UsersOnReports" (
+    "userId" INTEGER NOT NULL,
+    "reportId" INTEGER NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "UsersOnReports_pkey" PRIMARY KEY ("userId","reportId")
 );
 
 -- CreateTable
@@ -66,11 +75,21 @@ CREATE TABLE "GroupBudget" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
+    "ownerId" INTEGER NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "reportId" INTEGER,
 
     CONSTRAINT "GroupBudget_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "BudgetsOnGroupBudgets" (
+    "budgetId" INTEGER NOT NULL,
+    "groupBudgetId" INTEGER NOT NULL,
+    "assignedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "BudgetsOnGroupBudgets_pkey" PRIMARY KEY ("budgetId","groupBudgetId")
 );
 
 -- CreateTable
@@ -81,7 +100,6 @@ CREATE TABLE "Budget" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3),
     "authorId" INTEGER NOT NULL,
-    "groupId" INTEGER NOT NULL,
 
     CONSTRAINT "Budget_pkey" PRIMARY KEY ("id")
 );
@@ -199,13 +217,19 @@ CREATE UNIQUE INDEX "_UserManages_AB_unique" ON "_UserManages"("A", "B");
 CREATE INDEX "_UserManages_B_index" ON "_UserManages"("B");
 
 -- AddForeignKey
-ALTER TABLE "users" ADD CONSTRAINT "users_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES "Report"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Permission" ADD CONSTRAINT "Permission_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "Report" ADD CONSTRAINT "Report_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "Report" ADD CONSTRAINT "Report_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "GroupBudget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UsersOnReports" ADD CONSTRAINT "UsersOnReports_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "UsersOnReports" ADD CONSTRAINT "UsersOnReports_reportId_fkey" FOREIGN KEY ("reportId") REFERENCES "Report"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "UsersOnGroupBudgets" ADD CONSTRAINT "UsersOnGroupBudgets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -214,10 +238,16 @@ ALTER TABLE "UsersOnGroupBudgets" ADD CONSTRAINT "UsersOnGroupBudgets_userId_fke
 ALTER TABLE "UsersOnGroupBudgets" ADD CONSTRAINT "UsersOnGroupBudgets_groupBudgetId_fkey" FOREIGN KEY ("groupBudgetId") REFERENCES "GroupBudget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Budget" ADD CONSTRAINT "Budget_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "GroupBudget" ADD CONSTRAINT "GroupBudget_ownerId_fkey" FOREIGN KEY ("ownerId") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Budget" ADD CONSTRAINT "Budget_groupId_fkey" FOREIGN KEY ("groupId") REFERENCES "GroupBudget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "BudgetsOnGroupBudgets" ADD CONSTRAINT "BudgetsOnGroupBudgets_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "BudgetsOnGroupBudgets" ADD CONSTRAINT "BudgetsOnGroupBudgets_groupBudgetId_fkey" FOREIGN KEY ("groupBudgetId") REFERENCES "GroupBudget"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Budget" ADD CONSTRAINT "Budget_authorId_fkey" FOREIGN KEY ("authorId") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "incomes" ADD CONSTRAINT "incomes_budgetId_fkey" FOREIGN KEY ("budgetId") REFERENCES "Budget"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,10 +1,9 @@
 import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class CreateGroupBudgetDto {
-  constructor(title: string, users: any[], description?: string) {
+  constructor(title: string, description?: string) {
     this.title = title;
     this.description = description;
-    this.users = users;
   }
   @IsString()
   @IsNotEmpty()
@@ -12,7 +11,5 @@ export class CreateGroupBudgetDto {
 
   @IsString()
   @IsOptional()
-  description?: string | undefined;
-
-  users: any[];
+  description?: string;
 }

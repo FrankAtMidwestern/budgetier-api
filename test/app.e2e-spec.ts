@@ -6,6 +6,7 @@ import { PrismaService } from '../src/prisma/prisma.service';
 import { SignupAuthDto, SigninAuthDto } from '../src/auth/dto';
 import { EditUserDto } from '../src/user/dto';
 import { CreateGroupBudgetDto } from '../src/groupbudget/dto/create-groupbudget.dto';
+import { EditGroupBudgetDto } from '../src/groupbudget/dto/edit-groupbudget.dto';
 describe('App e2e', () => {
   let app: INestApplication;
   let prisma: PrismaService;
@@ -168,12 +169,52 @@ describe('App e2e', () => {
             Authorization: 'Bearer $S{userAt}',
           })
           .withBody(dto)
-          .expectStatus(201);
+          .expectStatus(201)
+          .stores('groupBudgetId', 'id');
       });
     });
-    describe('Get GroupBudgets', () => {});
-    describe('Get GroupBudget by id', () => {});
-    describe('Edit GroupBudget by id', () => {});
+    describe('Get GroupBudgets', () => {
+      it('should get GroupBudgets', async () => {
+        return pactum
+          .spec()
+          .get('/groupbudgets')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectJsonLength(1);
+      });
+    });
+    describe('Get GroupBudget by id', () => {
+      it('should get GroupBudget by id', async () => {
+        return pactum
+          .spec()
+          .get('/groupbudgets/{id}')
+          .withPathParams('id', '$S{groupBudgetId}')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .expectStatus(200)
+          .expectBodyContains('$S{groupBudgetId}');
+      });
+    });
+    describe('Edit GroupBudget by id', () => {
+      const dto: EditGroupBudgetDto = {
+        description: 'first group budget test',
+      };
+      it('should edit GroupBudget by id', async () => {
+        return pactum
+          .spec()
+          .patch('/groupbudgets/{id}')
+          .withPathParams('id', '$S{groupBudgetId}')
+          .withHeaders({
+            Authorization: 'Bearer $S{userAt}',
+          })
+          .withBody(dto)
+          .expectStatus(200)
+          .expectBodyContains('$S{groupBudgetId}');
+      });
+    });
     describe('Delete GroupBudget', () => {});
   });
   describe('Report', () => {

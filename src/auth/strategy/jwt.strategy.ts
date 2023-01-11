@@ -5,7 +5,7 @@ import { User } from '@prisma/client';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
-type PrismaUserWithoutHash =
+export type PrismaUserWithoutHash =
   | (Partial<Pick<User, 'hash'>> & Omit<User, 'hash'>)
   | null;
 @Injectable()

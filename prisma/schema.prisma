@@ -23,8 +23,9 @@ model User {
   budgets    Budget[]
   permissions Permission[]
   groupBudgets      UsersOnGroupBudgets[]
-  report     Report?   @relation(fields: [reportId], references: [id], onDelete: Cascade)
-  reportId   Int?
+  ownedGroupBudgets  GroupBudget[]
+ reports      UsersOnReports[]
+  ownedReports  Report[]
   managedBy User[]  @relation("UserManages") 
   managing  User[]  @relation("UserManages") 
   @@map("users")
@@ -43,6 +44,8 @@ model Permission {
 
 model Report {
   id        Int        @id @unique @default(autoincrement())
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id])
   title String
   description String?
   group       GroupBudget   @relation(fields: [groupId], references: [id], onDelete: Cascade)
@@ -50,7 +53,16 @@ model Report {
   totalIncome Int
   totalExpense Int
   net         Int
-  users       User[]
+  users       UsersOnReports[]
+}
+
+model UsersOnReports {
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade) 
+  userId Int 
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade) 
+ reportId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([userId, reportId]) 
 }
 
 model UsersOnGroupBudgets{
@@ -66,8 +78,10 @@ model GroupBudget {
   id        Int        @id @unique @default(autoincrement())
   title String
   description String?
+  ownerId Int
+  owner   User @relation(fields: [ownerId], references: [id])
   users       UsersOnGroupBudgets[]
-  budgets     Budget[]
+  budgets     BudgetsOnGroupBudgets[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @default(now())
   report      Report?
@@ -90,6 +104,15 @@ enum Action {
   DELETE
 }
 
+model BudgetsOnGroupBudgets {
+  budget Budget @relation(fields: [budgetId], references: [id], onDelete: Cascade) 
+  budgetId Int 
+  groupBudget GroupBudget @relation(fields: [groupBudgetId], references: [id], onDelete: Cascade) 
+  groupBudgetId Int  
+  assignedAt DateTime @default(now()) 
+  @@id([budgetId, groupBudgetId]) 
+}
+
 
 model Budget {
   id        Int       @id @unique @default(autoincrement())
@@ -101,8 +124,7 @@ model Budget {
   expense   Expense[]
   author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
   authorId    Int
-  group       GroupBudget   @relation(fields: [groupId], references: [id], onDelete: Cascade)
-  groupId     Int
+  group       BudgetsOnGroupBudgets[]  
   tags  TagsOnBudgets[]
 }
 
